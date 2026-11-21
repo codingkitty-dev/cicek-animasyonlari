@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gece Bahçesi</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: #f1e7ff;
+      background: radial-gradient(ellipse at 50% 100%, #24244e, #080916 75%);
+      font-family: system-ui, sans-serif;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100dvh;
+      cursor: crosshair;
+      touch-action: manipulation;
+    }
+
+    header {
+      position: fixed;
+      inset: 6vh 0 auto;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    h1 {
+      margin: 0;
+      font: clamp(2rem, 7vw, 4.5rem) Georgia, serif;
+    }
+
+    p {
+      margin: .6rem 1rem;
+      color: #c5bbdc;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Gece Bahçesi</h1>
+    <p>Bir çiçek açtırmak için bahçeye dokun.</p>
+  </header>
+
+  <canvas id="garden" aria-label="Işıklı çiçeklerin açtığı gece bahçesi"></canvas>
+
+  <script>
+    const canvas = document.querySelector('#garden');
+    const ctx = canvas.getContext('2d');
+    const flowers = [];
+    const colors = [290, 325, 175, 205, 42];
+
+    let width;
+    let height;
+
+    const fireflies = Array.from({ length: 55 }, () => ({
+      x: Math.random(),
+      y: Math.random(),
+      phase: Math.random() * Math.PI * 2,
+      radius: 0.7 + Math.random() * 1.4
+    }));
+
+    function resize() {
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(width * pixelRatio);
+      canvas.height = Math.round(height * pixelRatio);
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    }
+
+    function plant(x, y, color) {
+      flowers.push({
+        x: x / width,
+        y: y / height,
+        color,
+        plantedAt: performance.now(),
+        size: 11 + Math.random() * 9,
+        petals: 6 + Math.floor(Math.random() * 4),
+        phase: Math.random() * Math.PI * 2
+      });
+
+      if (flowers.length > 35) flowers.shift();
+    }
+
+    function drawFlower(flower, time) {
+      const age = Math.max(0, time - flower.plantedAt);
+      const growth = 1 - (1 - Math.min(age / 750, 1)) ** 3;
+      const bloom = 1 - (1 - Math.min(Math.max(age - 350, 0) / 650, 1)) ** 3;
+      const baseX = flower.x * width;
+      const baseY = flower.y * height;
+      const stemHeight = Math.min(125, baseY * 0.55) * growth;
+      const topX = baseX + Math.sin(time / 1200 + flower.phase) * 11 * growth;
+      const topY = baseY - stemHeight;
+      const color = flower.color;
+
+      ctx.beginPath();
+      ctx.moveTo(baseX, baseY);
+      ctx.quadraticCurveTo(baseX - 22 * growth, baseY - stemHeight * .55, topX, topY);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = `hsla(${color}, 70%, 65%, .55)`;
+      ctx.stroke();
+
+      if (bloom === 0) return;
+
+      ctx.save();
+      ctx.translate(topX, topY);
+      ctx.scale(bloom, bloom);
+      ctx.rotate(flower.phase + Math.sin(time / 1800 + flower.phase) * .12);
+
+      const size = flower.size;
+      const petal = ctx.createLinearGradient(0, 0, 0, -2 * size);
+      petal.addColorStop(0, `hsl(${color}, 64%, 45%)`);
+      petal.addColorStop(1, `hsl(${color}, 96%, 83%)`);
+      ctx.fillStyle = petal;
+      ctx.shadowColor = `hsl(${color}, 95%, 66%)`;
+      ctx.shadowBlur = 17;
+
+      for (let i = 0; i < flower.petals; i++) {
+        ctx.beginPath();
+        ctx.ellipse(0, -size, size * .43, size, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.rotate(Math.PI * 2 / flower.petals);
+      }
+
+      ctx.beginPath();
+      ctx.arc(0, 0, size * .34, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff4cb';
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function draw(time) {
+      ctx.clearRect(0, 0, width, height);
+
+      for (const fly of fireflies) {
+        const phase = fly.phase + time / 2200;
+        const x = fly.x * width + Math.sin(phase) * 24;
+        const y = fly.y * height + Math.cos(phase * .8) * 17;
+
+        ctx.beginPath();
+        ctx.arc(x, y, fly.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 231, 167, ${0.36 + Math.sin(phase * 2) * 0.28})`;
+        ctx.fill();
+      }
+
+      for (const flower of flowers) drawFlower(flower, time);
+      requestAnimationFrame(draw);
+    }
+
+    canvas.addEventListener('pointerdown', event => {
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      plant(event.offsetX, event.offsetY, color);
+    });
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    plant(width * .3, height * .79, 290);
+    plant(width * .52, height * .68, 175);
+    plant(width * .72, height * .83, 325);
+    requestAnimationFrame(draw);
+  </script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Açan Çiçek</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(#e9ddff, #fff3df);
+    }
+
+    .flower {
+      position: relative;
+      width: 220px;
+      height: 320px;
+    }
+
+    .stem {
+      position: absolute;
+      top: 110px;
+      left: 106px;
+      width: 8px;
+      height: 190px;
+      border-radius: 8px;
+      background: #387b52;
+      transform-origin: bottom;
+      animation: grow 900ms ease-out both;
+    }
+
+    .leaf {
+      position: absolute;
+      top: 100px;
+      left: 4px;
+      width: 58px;
+      height: 30px;
+      border-radius: 80% 0 80% 0;
+      background: #5fa86b;
+      transform: rotate(-25deg);
+    }
+
+    .head {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 180px;
+      height: 180px;
+    }
+
+    .petal {
+      position: absolute;
+      top: 0;
+      left: 64px;
+      width: 52px;
+      height: 90px;
+      border-radius: 50% 50% 42% 42%;
+      background: linear-gradient(#ffb1d0, #d93a83);
+      transform-origin: bottom center;
+      animation: bloom 850ms ease-out both;
+      animation-delay: calc(750ms + var(--i) * 80ms);
+    }
+
+    .center {
+      position: absolute;
+      top: 68px;
+      left: 68px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #ffce58;
+      animation: appear 400ms 750ms both;
+    }
+
+    @keyframes grow {
+      from { transform: scaleY(0); }
+      to   { transform: scaleY(1); }
+    }
+
+    @keyframes bloom {
+      from { transform: rotate(var(--angle)) scale(0); }
+      to   { transform: rotate(var(--angle)) scale(1); }
+    }
+
+    @keyframes appear {
+      from { transform: scale(0); }
+      to   { transform: scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .stem, .petal, .center { animation: none; }
+      .petal { transform: rotate(var(--angle)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="flower" role="img" aria-label="Yeşil saplı pembe çiçek">
+    <div class="stem">
+      <div class="leaf"></div>
+    </div>
+    <div class="head">
+      <div class="petal" style="--i: 0; --angle: 0deg"></div>
+      <div class="petal" style="--i: 1; --angle: 60deg"></div>
+      <div class="petal" style="--i: 2; --angle: 120deg"></div>
+      <div class="petal" style="--i: 3; --angle: 180deg"></div>
+      <div class="petal" style="--i: 4; --angle: 240deg"></div>
+      <div class="petal" style="--i: 5; --angle: 300deg"></div>
+      <div class="center"></div>
+    </div>
+  </div>
+</body>
+</html>
